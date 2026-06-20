@@ -26,9 +26,12 @@ const RETRY = {
 let SYSTEM_PROMPT = '';
 try {
     const systemPromptPath = path.join(__dirname, '../enilimeanthropic.txt');
+    console.log('Loading system prompt from:', systemPromptPath);
     SYSTEM_PROMPT = fs.readFileSync(systemPromptPath, 'utf-8');
+    console.log('System prompt loaded successfully, length:', SYSTEM_PROMPT.length);
 } catch (err) {
     console.error('Failed to load system prompt:', err);
+    console.error('File path attempted:', path.join(__dirname, '../enilimeanthropic.txt'));
     SYSTEM_PROMPT = 'You are a helpful AI assistant.';
 }
 
@@ -163,12 +166,15 @@ export default async function handler(req, res) {
     }
 
     try {
+        console.log('Received request, body keys:', Object.keys(req.body || {}));
         const body = req.body;
         const result = await send(body);
 
         return res.status(200).json(result);
     } catch (error) {
-        console.error('API Error:', error);
+        console.error('API Error:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('Error status:', error.status);
         
         const statusCode = error.status || 500;
         const errorResponse = {
