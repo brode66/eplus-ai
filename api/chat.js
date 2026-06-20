@@ -5,8 +5,8 @@
    are kept server-side for security.
    ============================================ */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // Configuration
 const API_BASE = 'https://openrouter.ai/api/v1/chat/completions';
