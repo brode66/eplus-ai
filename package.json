@@ -2,6 +2,7 @@
   "name": "e-plus-ai-assistant",
   "version": "1.0.0",
   "description": "E+ AI Assistant - Your intelligent chat companion",
+  "type": "module",
   "scripts": {
     "dev": "vercel dev",
     "build": ""
