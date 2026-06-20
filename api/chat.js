@@ -92,6 +92,15 @@ async function callModel(model, messageHistory, temperature, apiKey) {
 }
 
 async function send(options) {
+    console.log('send() called with options:', JSON.stringify({
+        model: options.model,
+        messageHistoryLength: options.messageHistory?.length,
+        autoRetry: options.autoRetry,
+        fallback: options.fallback,
+        temperature: options.temperature,
+        maxRetries: options.maxRetries
+    }));
+
     const {
         model = MODELS[0],
         messageHistory,
@@ -102,9 +111,13 @@ async function send(options) {
     } = options;
 
     const apiKey = process.env.OPENROUTER_API_KEY;
+    console.log('API Key present:', !!apiKey);
     if (!apiKey) {
         throw new Error('OPENROUTER_API_KEY environment variable is not set');
     }
+
+    console.log('Using model:', model);
+    console.log('System prompt length:', SYSTEM_PROMPT.length);
 
     // Build the list of models to try
     const modelsToTry = [model];
@@ -114,22 +127,30 @@ async function send(options) {
         });
     }
 
+    console.log('Models to try:', modelsToTry);
+
     let lastError = null;
 
     for (let mi = 0; mi < modelsToTry.length; mi++) {
         const currentModel = modelsToTry[mi];
         const maxAttempts = autoRetry ? maxRetries : 1;
 
+        console.log(`Attempting model ${currentModel}, attempt 1/${maxAttempts}`);
+
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
                 if (attempt > 0) {
                     const delay = getBackoffDelay(attempt - 1);
+                    console.log(`Retrying ${currentModel} in ${delay}ms...`);
                     await sleep(delay);
                 } else if (mi > 0) {
+                    console.log(`Falling back to ${currentModel}...`);
                     await sleep(500);
                 }
 
+                console.log(`Calling OpenRouter API with model: ${currentModel}`);
                 const data = await callModel(currentModel, messageHistory, temperature, apiKey);
+                console.log('OpenRouter API call successful');
 
                 return {
                     data: data,
@@ -139,22 +160,25 @@ async function send(options) {
                 };
 
             } catch (err) {
+                console.error(`Error with model ${currentModel}:`, err.message);
                 lastError = err;
 
                 // If it's not retryable, break out of retry loop for this model
                 if (err.status && !isRetryableStatus(err.status)) {
+                    console.log(`Error ${err.status} is not retryable, breaking`);
                     break;
                 }
 
                 // If it's retryable but we've used all attempts, move to next model
                 if (attempt === maxAttempts - 1) {
-                    // Continue to next model
+                    console.log(`Max attempts reached for ${currentModel}`);
                 }
             }
         }
     }
 
     // All models and retries exhausted
+    console.error('All models failed, throwing error');
     throw lastError || new Error('All models failed. Please try again later.');
 }
 
