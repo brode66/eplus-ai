@@ -1,0 +1,24 @@
+{
+  "name": "e-plus-ai-assistant",
+  "version": "1.0.0",
+  "description": "E+ AI Assistant - Your intelligent chat companion",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "ai",
+    "assistant",
+    "chat",
+    "openrouter",
+    "gpt",
+    "vercel"
+  ],
+  "author": "E+ Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {}
+}
